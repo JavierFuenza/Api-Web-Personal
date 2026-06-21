@@ -84,6 +84,13 @@ WHERE e.type = 'post' AND e.status = 'published'
 ORDER BY e.published_at DESC
 """
 
+_SQL_RANDOM_PHOTOS = """
+SELECT id, slug, title, file_path
+FROM entry
+WHERE type = 'photo' AND status = 'published'
+ORDER BY RANDOM()
+LIMIT 4
+"""
 
 # --- detail --------------------------------------------------------------------
 
@@ -257,4 +264,11 @@ async def get_posts(env, limit=None):
         res = await env.cms.prepare(sql).bind(limit).all()
     else:
         res = await env.cms.prepare(sql).all()
+    return _to_list(res)
+
+
+# --- random photos -------------------------------------------------------------
+
+async def get_random_photos(env):
+    res = await env.cms.prepare(_SQL_RANDOM_PHOTOS).all()
     return _to_list(res)

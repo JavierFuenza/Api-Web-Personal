@@ -150,6 +150,21 @@ async def get_photo_filters(request: Request, album: str | None = None):
     return await db.get_media_facets(env, "photo", album=album)
 
 
+@app.get("/api/photos/random")
+async def get_random_photos(request: Request):
+    env = _env(request)
+    rows = await db.get_random_photos(env)
+    return [
+        {
+            "id": r["id"],
+            "slug": r["slug"],
+            "title": r["title"],
+            "url": _media_url(env, r.get("file_path")),
+        }
+        for r in rows
+    ]
+
+
 @app.get("/api/videos")
 async def get_videos(
     request: Request,
