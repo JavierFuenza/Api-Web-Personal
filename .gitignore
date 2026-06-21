@@ -224,3 +224,4 @@ pylock.toml
 .dev.vars.*
 .wrangler
 .venv*
+instrucciones.md
