@@ -216,3 +216,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Cloudflare Python Worker
+python_modules/
+pylock.toml
+.dev.vars
+.dev.vars.*
+.wrangler
+.venv*

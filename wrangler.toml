@@ -1,0 +1,16 @@
+name = "web-personal-cms-api"
+main = "src/api.py"
+compatibility_date = "2026-06-18"
+compatibility_flags = ["python_workers"]
+
+[vars]
+R2_PUBLIC_BASE = "https://media.javierfuenzam.com"
+
+[[d1_databases]]
+binding = "cms"
+database_name = "cms"
+database_id = "9e99eed6-cb12-4ab3-a558-d2d14a25379f"
+
+[[r2_buckets]]
+binding = "cms_media"
+bucket_name = "cms-media"
