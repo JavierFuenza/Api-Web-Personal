@@ -58,6 +58,16 @@ async def get_entry(id: int, request: Request):
     return entry
 
 
+@app.get("/api/entries/by-slug/{slug}")
+async def get_entry_by_slug(slug: str, request: Request):
+    env = _env(request)
+    entry = await db.get_published_detail_by_slug(env, slug)
+    if entry is None:
+        raise HTTPException(status_code=404, detail="Not found")
+    entry["url"] = _media_url(env, entry.get("file_path"))
+    return entry
+
+
 # --- albums --------------------------------------------------------------------
 
 @app.get("/api/albums")
@@ -96,6 +106,7 @@ async def get_albums(request: Request):
 def _media_item(env, row):
     return {
         "id": row["id"],
+        "slug": row["slug"],
         "title": row["title"],
         "description": row["description"],
         "taken_at": row["taken_at"],

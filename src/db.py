@@ -39,6 +39,13 @@ LEFT JOIN album a ON a.id = e.album_id
 WHERE e.id = ? AND e.status = 'published'
 """
 
+_SQL_DETAIL_BY_SLUG = f"""
+SELECT {_ENTRY_COLUMNS}, a.name AS album_name
+FROM entry e
+LEFT JOIN album a ON a.id = e.album_id
+WHERE e.slug = ? AND e.status = 'published'
+"""
+
 _SQL_DETAIL_TAGS = """
 SELECT t.name
 FROM entry_tag et
@@ -94,14 +101,22 @@ LIMIT 4
 
 # --- detail --------------------------------------------------------------------
 
-async def get_published_detail(env, id):
-    row = await env.cms.prepare(_SQL_DETAIL).bind(id).first()
-    entry = _to_dict(row)
+async def _attach_tags(env, entry):
     if entry is None:
         return None
-    res = await env.cms.prepare(_SQL_DETAIL_TAGS).bind(id).all()
+    res = await env.cms.prepare(_SQL_DETAIL_TAGS).bind(entry["id"]).all()
     entry["tags"] = [r["name"] for r in _to_list(res)]
     return entry
+
+
+async def get_published_detail(env, id):
+    row = await env.cms.prepare(_SQL_DETAIL).bind(id).first()
+    return await _attach_tags(env, _to_dict(row))
+
+
+async def get_published_detail_by_slug(env, slug):
+    row = await env.cms.prepare(_SQL_DETAIL_BY_SLUG).bind(slug).first()
+    return await _attach_tags(env, _to_dict(row))
 
 
 # --- albums --------------------------------------------------------------------
@@ -179,7 +194,7 @@ async def get_media(env, media_type, *, album=None, tags=None,
 
     sql = f"""
 SELECT
-  e.id, e.title, e.description, e.taken_at, e.is_analog,
+  e.id, e.slug, e.title, e.description, e.taken_at, e.is_analog,
   e.camera_model, e.film_stock, e.width, e.height, e.file_path,
   a.name AS album_name,
   (SELECT group_concat(t.name) FROM entry_tag et
