@@ -272,11 +272,11 @@ WHERE {where_sql} AND e.taken_at IS NOT NULL
 
 # --- posts ---------------------------------------------------------------------
 
-async def get_posts(env, limit=None):
+async def get_posts(env, limit=None, offset=0):
     sql = _SQL_POSTS
     if limit is not None:
-        sql = sql + "\nLIMIT ?"
-        res = await env.cms.prepare(sql).bind(limit).all()
+        sql = sql + "\nLIMIT ? OFFSET ?"
+        res = await env.cms.prepare(sql).bind(limit, offset).all()
     else:
         res = await env.cms.prepare(sql).all()
     return _to_list(res)

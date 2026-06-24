@@ -205,9 +205,9 @@ async def get_video_filters(request: Request):
 # --- posts ---------------------------------------------------------------------
 
 @app.get("/api/posts")
-async def get_posts(request: Request, limit: int | None = None):
+async def get_posts(request: Request, limit: int | None = None, offset: int = 0):
     env = _env(request)
-    rows = await db.get_posts(env, limit)
+    rows = await db.get_posts(env, limit, offset)
     return [
         {
             "id": r["id"],
