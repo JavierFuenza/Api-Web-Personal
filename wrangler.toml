@@ -1,4 +1,4 @@
-name = "web-personal-cms-api"
+name = "api-web-personal"
 main = "src/api.py"
 compatibility_date = "2026-06-18"
 compatibility_flags = ["python_workers"]
