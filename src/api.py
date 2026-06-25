@@ -4,6 +4,8 @@ Cloudflare Python Worker (FastAPI). Serves only GET under /api/*. Shares D1
 ``cms`` and R2 ``cms_media`` with the admin CMS. No Cloudflare Access — public.
 """
 
+import re
+
 from workers import WorkerEntrypoint
 import asgi
 from fastapi import FastAPI, Request, HTTPException, Query
@@ -33,10 +35,28 @@ def _media_url(env, file_path):
 
 
 def _excerpt(body, length=200):
+    """Plain-text summary from a markdown body.
+
+    Strips common markdown syntax (sin libreria: el bundle del Worker tiene
+    limite de tamano) para que el listado y el RSS no muestren `##`, `**`, etc.
+    """
     if not body:
         return ""
-    text = body.strip()
-    return text[:length]
+    text = body
+    # Bloques de codigo cercados ```...```
+    text = re.sub(r"```.*?```", " ", text, flags=re.S)
+    # Imagenes ![alt](url) -> alt  y  enlaces [texto](url) -> texto
+    text = re.sub(r"!\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    text = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    # Marcadores al inicio de linea: encabezados, citas, listas
+    text = re.sub(r"(?m)^[ \t]*(?:#{1,6}|>|[-*+]|\d+\.)[ \t]+", "", text)
+    # Enfasis e inline code: * _ ~ `
+    text = re.sub(r"[*_~`]+", "", text)
+    # Colapsar espacios en blanco
+    text = " ".join(text.split())
+    if len(text) <= length:
+        return text
+    return text[:length].rstrip() + "…"
 
 
 def _parse_tags(tags):
